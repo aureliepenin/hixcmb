@@ -22,7 +22,7 @@ Module cosmo_tools
   Real(DP), Parameter :: c_sol   = 299792.458 ! km/s
 
   !! Parameter vector
-  Integer , Parameter         :: npar = 13
+!  Integer , Parameter         :: npar = 13
 
   !! Conftau
   Integer, Parameter :: nz_tau = 1000
@@ -46,7 +46,8 @@ Module cosmo_tools
 Contains
 
   !==================================================
-  Subroutine set_default_cosmology(iparam0,param_vec)
+  Subroutine set_default_cosmology()
+!!  Subroutine set_default_cosmology(iparam0,param_vec)
     !==================================================
     !! iparam : 0:reset all cosmology to default except the one selected by iparam
     !!           which has to be defined outside independantly
@@ -54,56 +55,55 @@ Contains
     !! Normalized at sigma_8
 
 
-    Integer                        , Optional :: iparam0
-    Real(SP)    , Dimension(1:npar), Optional :: param_vec
+!!    Integer                        , Optional :: iparam0
+!!    Real(SP)    , Dimension(1:npar), Optional :: param_vec
 
     Real(DP)  :: sigma_8,rombint,tol_i,tmp
     Integer   :: iparam
 
     External :: rombint
 
-    If (.Not. Present(iparam0)) Then 
-       iparam = 0
-    Else
-       iparam = iparam0
-    End If
+!    If (.Not. Present(iparam0)) Then 
+!       iparam = 0
+!    Else
+!       iparam = iparam0
+!    End If
     !! Define cosmological parameters
     T_cmb = 2.725
     N_nu  = 0.0
     N_eff = 3.04
     wg    = 2.469d-5 ! \omega_\gamma h^2 for Tcmb = 2.725K as in Komatsu et al. arXiv:0803.0547 Eq. 7 
 
-    !! WMAP7
+    !! Planck
     If (iparam .Ne. 1) w0   = -1.0
     If (iparam .Ne. 2) wa   =  0. 
     If (iparam .Ne. 3) wm   =  0.1430!0.1334
     If (iparam .Ne. 4) wb   =  0.022068!0.0258
     If (iparam .Ne. 5) ns   =  0.9624!0.963
     If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
-    !! HOD Params
-    If (iparam .Ne. 7)  alpha       = alpha_0
-    If (iparam .Ne. 8)  beta        = beta_0
-    If (iparam .Ne. 9)  gamma       = gamma_0
-    If (iparam .Ne. 10) T0          = T0_0
-    If (iparam .Ne. 11) delta       = delta_0
-    If (iparam .Ne. 12) log10_Mmin  = log10_Mmin_0
-    If (iparam .Ne. 13) log10_Meff  = log10_Meff_0
 
-    If (Present(param_vec)) Then 
-       If (iparam .Ne. 1)       w0           = param_vec(1)
-       If (iparam .Ne. 2)       wa           = param_vec(2)
-       If (iparam .Ne. 3)       wm           = param_vec(3)
-       If (iparam .Ne. 4)       wb           = param_vec(4)
-       If (iparam .Ne. 5)       ns           = param_vec(5)
-       If (iparam .Ne. 6)       sig8         = param_vec(6)
-       If (iparam .Ne. 7)       alpha        = param_vec(7)
-       If (iparam .Ne. 8)       beta         = param_vec(8)
-       If (iparam .Ne. 9)       gamma        = param_vec(9)
-       If (iparam .Ne. 10)      T0           = param_vec(10)
-       If (iparam .Ne. 11)      delta        = param_vec(11)
-       If (iparam .Ne. 12)      log10_Mmin   = param_vec(12)
-       If (iparam .Ne. 13)      log10_Meff   = param_vec(13)
-    End If
+!!    If (iparam .Ne. 1) w0   = -1.0
+!!    If (iparam .Ne. 2) wa   =  0. 
+!!    If (iparam .Ne. 3) wm   =  0.1430!0.1334
+!!    If (iparam .Ne. 4) wb   =  0.022068!0.0258
+!!    If (iparam .Ne. 5) ns   =  0.9624!0.963
+!!    If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
+!!
+
+
+
+    
+!!
+!!    If (iparam .Ne. 1)       w0           = param_vec(1)
+!!    If (iparam .Ne. 2)       wa           = param_vec(2)
+!!    If (iparam .Ne. 3)       wm           = param_vec(3)
+!!    If (iparam .Ne. 4)       wb           = param_vec(4)
+!!    If (iparam .Ne. 5)       ns           = param_vec(5)
+!!    If (iparam .Ne. 6)       sig8         = param_vec(6)
+!! End If
+!!
+
+
 
     Oml  = 0.6825!0.7259! 0.734             ! Omega_Lambda
     Omk  = 0.                ! Omega_curvature

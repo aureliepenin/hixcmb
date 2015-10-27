@@ -40,6 +40,8 @@ Contains
    zmin_arr = 0.07
    zmax_arr = 5.
    
+!! Use Tinker mass function (Cf power_spec_tools.f90)
+   mass_function = 4
 
  End Subroutine initiate_parameters
   !======================================================

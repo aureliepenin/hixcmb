@@ -233,8 +233,7 @@ Contains
 !!$!     -------------------------------------------------------------------
 !!$     Formula of Cooray, Hu & Miralda-Escude 00 (Eq. 8)
 !!$      a = 10.3*(1.+z)**(-0.3)
-!!$      b = 0.24*(1.+z)**(-0.3)
-!!$      Mstar = Mstar_finder(z)
+!!$      b = 0.24*(1.+z)**(-0.3)!!$      Mstar = Mstar_finder(z)
 !!$      conc  = a * (Mv/Mstar)**(-b)
 !!$      WRITE(*,*) 'conc0,conc1,mstar',conc,9.0/(1.0+z)*(Mv/Mstar_finder(0.d0))**(-0.13),mstar
 !!$!     ------------------------------------------------------------------

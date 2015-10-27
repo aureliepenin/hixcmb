@@ -9,7 +9,7 @@ Program Main
   Use clustering
   Use write_files
 
-  Real(DP) :: zmin, zmax
+  Real(DP) :: zmin, zmax, zz, plouf1, plouf2
 
 
   write(*,*) "starting"
@@ -21,6 +21,12 @@ Program Main
   write(*,*) "initiate_arrays"
   Call initiate_arrays()
   write(*,*) "write HI stuffs"
+  zz = 0.8
+  write(*,*) 'at z = 0.8 = '
+  plouf1 =  bias_HI(zz)
+  plouf2  = Omega_HI(zz)
+  write(*,*) plouf2, plouf1, plouf2*plouf1, 0.62d-4/(plouf2*plouf1)
+stop
   Call write_HI_stuffs()
   Call write_PHI()
   zmin = 1.
