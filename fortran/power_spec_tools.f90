@@ -95,6 +95,40 @@ Contains
   End Function P_dd_ln
   !! =================
 
+
+  !! ==================================
+  Real*8 Function P_lin_cross(k,z1,z2)
+  !! ==================================
+    !    Compute the linear power spectrum using the TF from Eisenstein & Hu 99
+    !    Norm from Bunn & White 97
+    !    Flat cosmology Omega_l = 1.0 - Omega_m
+    !    k in input is in [h Mpc-1]
+    !    Pk in [Mpc/h]^3
+
+    Implicit None
+    
+    Real*8   :: z1, z2, k
+    Real*8   :: DoD01,DoD02, Tm
+
+    Tm      = TF_master(k*hub)
+    P_lin_cross = anorm*Tm**2.*(k*hub)**ns*2.*pi**2*hub**3 !(EH99 A1)
+    !! Agrees as is with CAMB with the hub**3 factor (OD 12/09/10)...
+    !! So does the NL correction with halofit
+    !! This works for flat or non-flat cosmology, but not DoD0
+
+    If (z1 .Ne. 0.0 .and. z2 .Ne. 0.0) Then
+       DoD01    = fast_DoD0(z1)
+       DoD02    = fast_DoD0(z2)
+       P_lin_cross = P_lin_cross * DoD01 * DoD02
+    Endif
+
+    Return
+
+  End Function P_lin_cross
+  !! =================
+
+
+
   !! ==========================
   Real(DP) Function bias(Mv,z)
   !! ==========================

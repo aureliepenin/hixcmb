@@ -6,11 +6,12 @@ Module Initiate_all
   Use cosmo_tools
   Use power_spec_tools
 
-  Integer, parameter :: nl_arr = 100
+  Integer, parameter :: nl_arr = 20
   Integer, parameter :: nz_arr = 100
 
   Real(DP) :: lmin_arr, lmax_arr, zmin_arr, zmax_arr
-  Real(DP), Dimension(:)  , Allocatable  :: z_arr, l_arr, cl_arr, cl_hi_kappa, cl_hi_hi, cl_kappa_kappa
+  Real(DP), Dimension(:)  , Allocatable  :: z_arr, l_arr, cl_arr, cl_hi_kappa, cl_hi_hi, cl_kappa_kappa, cl_hi_kappa_for_fisher
+  Real(DP), Dimension(:)  , Allocatable  :: cl_cross_arr, cl_hi_arr
   Real(DP), Dimension(:,:), Allocatable  :: k_arr, Plin_arr
 
   Character(Len=50) :: dir_out='../Output/'
@@ -34,8 +35,8 @@ Contains
  !======================================================
  Subroutine initiate_parameters()
    
-   lmin_arr = 50.d0
-   lmax_arr = 2700.d0
+   lmin_arr = 2.d0
+   lmax_arr = 3000.d0
 
    zmin_arr = 0.07
    zmax_arr = 5.
@@ -87,7 +88,7 @@ Contains
 !!    !! The output Plin is in (Mpc/h)^3 => multiplied by h**3
 !!    !! Also geometry term for the Cl
 !!
-!!    Allocate(k_arr(1:nz_arr,1:nl_arr))
+!!    Allocate(k_perp_arr(1:nz_arr,1:nl_arr))
 !!    Allocate(Plin_arr(1:nz_arr,1:nl_arr))
 !!
 !!    !! geom = dr/dz * (a/r)**2 => in (Mpc/h)**(-1) from the cosmo routines => / hub

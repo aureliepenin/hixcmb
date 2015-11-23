@@ -6,228 +6,222 @@ Module clustering
   Use power_spec_tools
   Use initiate_all
   Use HI_stuffs
+  Use clustering_limber
 
-  Real(DP) :: l_for_integrand
-  Real(DP) ::  z_cmb   = 1089.
+  Implicit None
 
+  Real(DP) :: kperp_for_int, zmean_for_int, zmin_for_int, zmax_for_int
+  Real(DP) :: eta_for_int, delta_eta_for_int, kpara_for_int
 
   Public 
   
 Contains
 
+
   !======================================================
-  Subroutine Compute_cl_hi_kappa(zmin,zmax)
-
-    Integer  :: il
-    Real(DP) :: rombint, tol_i, zmin, zmax
-    external :: rombint
-
-    tol_i = 1.d-4
-    Allocate(cl_hi_kappa(1:nl_arr))
-    cl_hi_kappa = 0.
-    Do il = 1, nl_arr 
-       l_for_integrand = l_arr(il)
-       cl_hi_kappa(il) = rombint(cl_hi_kappa_int,zmin,zmax,tol_i)
-!      write(*,*) "il = ", il, l_arr(il), cl_hi_kappa(il)
-    End Do
-
-  End Subroutine Compute_cl_hi_kappa
-  !======================================================
-
- 
-  !======================================================
-  Function cl_hi_kappa_int(z)
-!integration on z for the moment
-
-    Real(DP) :: cl_hi_kappa_int, z, Plin, k_buf, detadz, eta, eta0
+  Subroutine Compute_cl_cross(zmin,zmax)
     
-    w_kappa = kernel_kappa(z,l_for_integrand)
-    w_hi    = kernel_hi(z)
-    eta0    = conftime(0.d0)
-    eta     = eta0 - conftime(z)
-    k_buf   = (l_for_integrand + 0.5) / eta 
-    Plin    = P_dd_ln(k_buf,z)
-    detadz  = dconftime(z)
-
-    cl_hi_kappa_int = detadz * w_hi * w_kappa * Plin
-
-  End Function cl_hi_kappa_int
-  !======================================================
-
- !======================================================
-  Subroutine Compute_cl_kappa_kappa(zmin,zmax)
-
     Integer  :: il
-    Real(DP) :: rombint, tol_i, zmin, zmax
-    external :: rombint
-
-    tol_i = 1.d-4
-    Allocate(cl_kappa_kappa(1:nl_arr))
-    cl_kappa_kappa = 0.
-    Do il = 1, nl_arr 
-       l_for_integrand = l_arr(il)
-       cl_kappa_kappa(il) = rombint(cl_kappa_kappa_int,zmin,zmax,tol_i)
-!      write(*,*) "il = ", il, l_arr(il), cl_kappa_kappa(il)
-    End Do
-
-  End Subroutine Compute_cl_kappa_kappa
-  !======================================================
-
-  !======================================================
-  Function cl_kappa_kappa_int(z)
-    !! detadz       =>  Mpc h^{-1}
-    !! Kernel_kappa => (Mpc h^-1)^-2 
-    !! Plin         => (Mpc h^-1)^3 
-    !! cl_kk        => nothing
-
-!integration on z for the moment
-
-    Real(DP) :: cl_kappa_kappa_int, z, Plin, k_buf, detadz
-    Real(DP) :: eta0, eta
+    Real(DP) :: zmin, zmax
     
-    w_kappa = kernel_kappa(z,l_for_integrand)
-    w_hi    = kernel_hi(z)
-    eta0    = conftime(0.d0)
-    eta     = eta0 - conftime(z)
-    k_buf   = (l_for_integrand + 0.5) / eta 
-    Plin    = P_dd_ln(k_buf,z)
-    detadz  = dconftime(z)
+    Allocate(cl_cross_arr(1:nl_arr))
+    Do il = 1, nl_arr
+       cl_cross_arr(il) = cl_cross(l_arr(il),zmin,zmax)
+       write(*,*) "new = ", l_arr(il), cl_cross_arr(il)
+    End do
 
-    cl_kappa_kappa_int = detadz * w_kappa**2 * Plin
-
-  End Function cl_kappa_kappa_int
-  !======================================================
-
-
-  !======================================================
-  Function Kernel_kappa(z,ell)
-!!!CHECK LES C et autres trucs 
-
-!! eta     => Mpc h^{-1}
-!! invhub  => Mpc h^-1
-!! Kernel_kappa => (Mpc h^-1)^-2 * Mpc h^-1 * (Mpc h^-1)^-1
-!! Kernel_kappa => (Mpc h^-1)^-2 
-    
-
-    Real(DP) :: Kernel_kappa, z, Omegam, a, ell, z_source
-    Real(DP) :: detadz, eta0, eta, eta_star, frac
-
-    Omegam   = Om0
-    a        = 1. / (1. + z)
-    eta0     = conftime(0.d0)
-    eta      = eta0 - conftime(z)
-    eta_star = eta0 - conftime(z_source)
-    z_source = z_cmb
-
-    frac = (eta_star - eta) / (eta_star * eta)
-    Kernel_kappa = 3.0 / 2. / invhub**2 * Omegam * (eta / a) * frac
-!    write(*,*) 'eta_star = ', eta_star
-
-
-  End Function Kernel_kappa
-  !======================================================
-
-  !======================================================
-  Function Kernel_HI(z)
-!! eta  => Mpc h^{-1}
-!! temp => mK
-!! Kernel_HI => Mpc^-1 h mK
-
-    Real(DP) :: z, Kernel_HI, a, eta0, eta, temp, bias
-
-    a      = 1. / (1. + z)
-    eta0   = conftime(0.d0)
-    eta    = eta0 - conftime(z)
-
-    temp    = T_HI_mean(z)
-    bias    = bias_HI(z)
-
-    Kernel_HI = (a/eta) * temp * bias
-
-  End Function Kernel_HI
-  !======================================================
-
-  !======================================================
-  Subroutine Compute_cl_hi_hi(zmin,zmax)
-
-    Integer  :: il
-    Real(DP) :: zmin, zmax, rombint, tol_i, tmp
-    External :: rombint
-
-    Allocate(cl_hi_hi(1:nl_arr))
-    cl_hi_hi = 0.
-    tol_i = 1.d-4
-    Do il = 1, nl_arr 
-       l_for_integrand = l_arr(il)
-       cl_hi_hi(il) = rombint(cl_hi_hi_int,zmin,zmax,tol_i)
-       write(*,*) l_arr(il), cl_hi_hi(il)
-    End Do
-
-
-  End Subroutine Compute_cl_hi_hi
+  End Subroutine Compute_cl_cross
     !======================================================
 
   !======================================================
-  Function cl_hi_hi_int(z)
-    !! ATTENTION LES h sont dedans
-    Real(DP)  :: cl_hi_hi_int,  w_HI, geo, Plin, z, a, detadz
-    Real(DP)  :: k_buf
+  Subroutine Compute_cl_hi(zmin,zmax)
+    
+    Integer  :: il
+    Real(DP) :: zmin, zmax
+    
+    Allocate(cl_hi_arr(1:nl_arr))
+    Do il = 1, nl_arr
+       cl_hi_arr(il) = cl_hi(l_arr(il),zmin,zmax)
+       write(*,*) "new = ", l_arr(il), cl_hi_arr(il)
+!stop
+    End do
 
-    a      = 1. / (1. + z)
-    detadz = dconftime(z)
-    eta0   = conftime(0.d0)
-    eta    = eta0 - conftime(z)
-    w_HI   = kernel_HI(z)
-    k_buf  = (l_for_integrand + 0.5) / eta 
-    Plin   = P_dd_ln(k_buf,z)
+  End Subroutine Compute_cl_hi
+    !======================================================
 
-    cl_hi_hi_int = detadz * w_HI**2 * Plin 
+  !======================================================
+  Function cl_cross(ell,zmin,zmax)
+    
+    Real(DP) :: cl_cross, ell, zmin, zmax, rombint, tol_i
+    Real(DP) :: eta, eta0, Temp
+    Real(DP) :: kpara_min, kpara_max, log_kpara_min, log_kpara_max
+    external :: rombint
 
-  End Function Cl_hi_hi_int
+    tol_i = 1.d-4
+    eta0          = conftime(0.d0)
+    eta_for_int   = eta0 - conftime(zmin)
+
+    kperp_for_int = ell / eta_for_int
+    zmin_for_int  = zmin 
+    zmax_for_int  = zmax 
+
+    kpara_min = 2.0 * pi / eta_for_int * (1.d0 + zmin_for_int) 
+!    kpara_max = 0.21 ! cf Bull+2015
+    kpara_max = 0.15 * 1.d0 ! cf Bull+2015 h^-1 taken into account
+    log_kpara_min = log10(kpara_min) * 1.d0
+    log_kpara_max = log10(kpara_max) * 1.d0
+
+    cl_cross = rombint(cl_cross_int,log_kpara_min,log_kpara_max,tol_i) 
+
+    Temp = T_HI_mean(zmin)
+    cl_cross = cl_cross * Temp / eta_for_int 
+!    write(*,*) "in cl_cross", Temp, eta_for_int
+    
+  End Function cl_cross
   !======================================================
 
   !======================================================
-  Function P_HI(z,k)
-!! Input k in (Mpc h^-1)^-1
-!! Plin in (Mpc h^-1)^3
-!! Temp in mK here (divided by hub)
-!! P_HI in mK^2 (Mpc h^-1)^3
+  Function cl_cross_int(logkpara)
 
-    Real(DP)  :: z, k, Plin, P_HI, temp, bias
+    Real(DP) :: logkpara, cl_cross_int, tol_i
+    Real(DP) :: rombint
+    external :: rombint
 
-    temp   = T_HI_mean(z) / hub
-    bias   = bias_HI(z)
-    Plin   = P_dd_ln(k,z)
+    tol_i = 1.d-4 
+    kpara_for_int = 10.d0**logkpara
+!    write(*,*) "before 2nd integral", logkpara, kpara_for_int
+!stop
+    cl_cross_int  = rombint(cross_over_r_int,zmin_for_int,zmax_for_int,tol_i)
+    cl_cross_int = cl_cross_int * kpara_for_int * log(10.)
+!    write(*,*) kpara_for_int, kperp_for_int, cl_cross_int
+!! extra kara because of the log integral
 
-    P_HI = bias**2 * temp**2 * Plin 
+  End Function cl_cross_int
+  !======================================================
 
-  End Function P_HI
+  !======================================================
+  Function cl_hi(ell,zmin,zmax)
+!! Appendix A in Shaw+2014 for eta = eta_mean 
+    
+    Real(DP) :: cl_hi, ell, zmin, zmax, rombint, tol_i
+    Real(DP) :: zmean, f, bOmega_HI, eta1, eta2, eta0, Tmin, Tmax, eta_mean_for_int
+    Real(DP) :: kpara_min, kpara_max, log_kpara_min, log_kpara_max
+    external :: rombint
+
+    tol_i = 1.d-4
+    zmean_for_int = (zmin+zmax)/2.
+
+!    bOmega_HI = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
+    eta0     = conftime(0.d0)
+!    eta       = eta0 - conftime(zmean_for_int)
+    eta1      = eta0 - conftime(zmin)
+    eta2      = eta0 - conftime(zmax)
+    eta_mean_for_int = (eta1 + eta2)/2.
+    delta_eta_for_int = eta2 - eta1
+
+    kperp_for_int = ell/eta_mean_for_int 
+    zmin_for_int  = zmin 
+    zmax_for_int  = zmax 
+!!!CHECK THAT
+!    kpara_min = 2.0 * pi / eta_mean_for_int * (1.d0 + zmean_for_int)
+!    write(*,*) "kpara min = ", kpara_min 
+!    kpara_max = 0.21 ! cf Bull+2015
+    kpara_max = 0.15*1.d0 ! cf Bull+2015
+!! to check with the limber one
+    kpara_min = 1.d-5
+!    kpara_max = 
+    log_kpara_min = log10(kpara_min)
+    log_kpara_max = log10(kpara_max)
+
+    cl_hi = rombint(cl_hi_int,log_kpara_min,log_kpara_max,tol_i)
+
+    Tmin = T_HI_mean(zmin)
+    Tmax = T_HI_mean(zmax)
+
+    cl_hi = cl_hi * Tmin * Tmax / eta1 / eta2 / pi 
+!   write(*,*) "in cl_hi end ", kperp_for_int
+    stop
+  End Function cl_hi
   !======================================================
 
 
   !======================================================
-  Function geom(z)
-!! in h^-1 pour le moment
-    Real(DP)  :: a, z, geom, detadz, eta0, eta
+  Function cl_hi_int(logkpara)
+!! eta = eta mean 
+!! Cf appendix A Shaw+2014
 
-    a      = 1. / (1. + z)
-    detadz = dconftime(z)
-    eta0   = conftime(0.d0)
-    eta    = eta0 - conftime(z)
-    geom   =  detadz * (a / eta)**2 !!/ hub
+    Real(DP) :: cl_hi_int, bias, kpara, knorm, mu
+    Real(DP) :: logkpara, f, eta_mean_for_int 
+    Real(DP) :: in_cos, Plin
 
-  End Function geom
+!!! ATTENTION AU ZMEAN
+    bias  = Bias_HI(zmean_for_int) 
+    kpara = 10.d0**logkpara
+    knorm = sqrt(kpara**2 + kperp_for_int**2)
+    mu    = kpara / knorm
+    f     = growth_factor(zmean_for_int)
+
+    write(*,*) kpara, kperp_for_int, knorm
+    Plin = P_lin_cross(knorm,zmin_for_int,zmax_for_int)
+    in_cos = kpara * delta_eta_for_int
+!    cl_hi_int = (bias + f * mu**2)**2 * cos(in_cos) * Plin * log(10.) * kpara
+    cl_hi_int = (bias + f * mu**2)**2  * Plin * log(10.) * kpara
+
+!! Extra kpara * log 10 because log integration
+
+
+  End Function cl_hi_int
   !======================================================
 
+  !======================================================
+  Function cross_over_r_int(z)
 
+    Real(DP)  :: a, eta0, eta, z_source, eta_star, Omegam, frac, kappa_kernel
+    Real(DP)  :: knorm, Plin, delta_eta, in_cos, bias, mu, f, bias_term
+    Real(DP)  :: cross_over_r_int, z
 
+    a        = 1. / (1. + z)
+    eta0     = conftime(0.d0)
+    eta      = eta0 - conftime(z)
+    z_source = z_cmb
+    eta_star = eta0 - conftime(z_source)
+    Omegam   = Om0
+    frac     = (eta_star - eta) / (eta_star * eta)
+    kappa_kernel = eta / a * frac * 3.d0 / 2.d0 / invhub**2  * Omegam
 
+    knorm    = sqrt(kpara_for_int**2 + kperp_for_int**2)
+    Plin     = P_lin_cross(knorm,zmin_for_int,z)
 
+    delta_eta = abs(eta_for_int - eta)
+    in_cos    = kpara_for_int * delta_eta
 
+    bias  = Bias_HI(z) 
+    mu    = kpara_for_int / knorm
+    f     = growth_factor(z)
+    bias_term = bias + f * kpara_for_int**2/knorm**2
 
+!    cross_over_r_int = kappa_kernel * cos(in_cos) * bias_term 
+    cross_over_r_int = kappa_kernel * bias_term 
+!    write(*,*) kappa_kernel, cos(in_cos), bias_term, cross_over_r_int
 
+  End Function Cross_over_r_int
+  !======================================================
 
+  !======================================================
+  Function growth_factor(z)
+!!    Following Bull+2015 page 3
 
+    Real(DP) :: growth_factor, z
+    Real(DP) :: H_of_z, Omega_m, gamma 
+    
+    H_of_z = Hubble(z)
+    Omega_m = Om0 * (1.0 + z)**3 * H02 / H_of_z**2
+    gamma = 0.55
+    growth_factor = Omega_m ** gamma 
+!    write(*,*) "in growth factor", z, H_of_z, Om0, Omega_m, gamma, growth_factor
+
+  End Function growth_factor
+  !======================================================
 
 
 

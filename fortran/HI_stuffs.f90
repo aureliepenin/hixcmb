@@ -8,7 +8,11 @@ Module HI_stuffs
   Use initiate_all
 
 
-  Real(DP)  :: z_buf 
+  Implicit None 
+
+  Real(DP)  :: z_buf_bias, z_buf_rho
+  Real(DP)  :: speed_of_light = 299792458.0 ! m/s 
+    
 
   Public 
   
@@ -37,17 +41,18 @@ Contains
 !! From Pourtsidou+2015 Eq 13
 !! From Crighton+2015 
 !! (1+z)^-3 because should be in proper units
-!! normalisation Omega_HI0 = 6.5d-4 from Bull+2015
+!! normalisation Omega_HI0 = 4.86d-4 from Bull+2015 Fig. 20 
 
     Real(DP)  :: Omega_HI, z, rho_crit0, norma
-    write(*,*) "Attention a la normalisation de Omega_HI"
-!!    Omega_HI = 4.0d-4 * (1. + z)**0.6
-    norma = 37.157521791021466
-    rho_crit0 = rho_bar_m(z)
-    Omega_HI = (1. + z)**(-3.) * rho_HI(z) / rho_crit0 * norma
+
+    rho_crit0 = rho_bar_m(0.d0)
+    norma = 1.!4.3373760858165869E-003
+!    Omega_HI = (1. + z)**(-3.) * rho_HI(z) / rho_crit0 * norma
+    Omega_HI =  rho_HI(z) / rho_crit0 * norma
 
   End Function Omega_HI
   !======================================================
+
 
   !======================================================
   Function bias_HI(z)
@@ -56,17 +61,15 @@ Contains
 
     Real(DP)  :: bias_HI, z_buf, rombint, tol_i, rho, z
     Real(DP)  :: logMmin, logMmax
-    external :: rombint
+    external  :: rombint
 
     tol_i   = 1.d-4
-    z_buf   = z
+    z_buf_bias   = z
     rho     = rho_HI(z)
     logMmin = log10(Mmin_for_hosting_HI(z))
     logMmax = log10(Mmax_for_hosting_HI(z))
     bias_HI = rombint(bias_HI_int, logMmin, logMmax,tol_i)
     bias_HI = bias_HI / rho
-!    write(*,*) "z, bias HI, rhoHI = ", z, bias_HI, rho
-
 
   End Function Bias_HI
   !======================================================
@@ -74,12 +77,13 @@ Contains
   !======================================================
   Function bias_HI_int(logM)
 !! in proper units
-    Real(DP) :: M, dndm, bias_HI_int, logM
+
+    Real(DP) :: M, dndm, bias_HI_int, logM, bias_halo, MHI
 
     M         = 10.d0**logM
-    dndm      = dndm_f(M,z_buf)! * (1. + z_buf)**(-3.)
-    bias_halo = bias(M,z_buf)
-    MHI       = MHI_of_M(M)
+    dndm      = dndm_f(M,z_buf_bias)! * (1. + z_buf_bias)**(-3.)
+    bias_halo = bias(M,z_buf_bias)
+    MHI       = MHI_of_M(M) 
 
     bias_HI_int = log(10.) * M * dndm * MHI * bias_halo
 !! extra M for log integration
@@ -94,9 +98,10 @@ Contains
     external :: rombint
 
     tol_i = 1.d-4 
-    z_buf = z
+    z_buf_rho = z
     logMmin = log10(Mmin_for_hosting_HI(z))
     logMmax = log10(Mmax_for_hosting_HI(z))
+
     rho_HI = rombint(rho_HI_int, logMmin, logMmax, tol_i)
 
   End Function rho_HI
@@ -106,13 +111,14 @@ Contains
   Function rho_HI_int(logM)
 !! in proper units
 
-    Real(DP)  :: logM, M, MHI, rho_HI_int
+    Real(DP)  :: logM, M, MHI, rho_HI_int, dndm
 
     M         = 10.d0**logM
-    dndm      = dndm_f(M,z_buf)! * (1.+ z)**(-3.)
+    dndm      = dndm_f(M,z_buf_rho) !* (1.+ z_buf_rho)**(-3.)
     MHI       = MHI_of_M(M)
 
     rho_HI_int  = log(10.) * M * dndm * MHI 
+!    write(*,*) "in rho_int", z_buf
 !! extra M for log integration
 
   End Function rho_HI_int
@@ -159,17 +165,44 @@ Contains
   Function MHI_of_M(M)
 !! See Appendix B of Bull+2015
 !! normalisation with the constraint at z=0.8 of Switzer+2013
-!! the normalisation to match 6.2d-4
+!! the norma = rho_bar_m(0.d0) * 4.86d-4 / rho_HI(0.d0)
 !! M in Msol h^-1 
 
     Real(DP) :: M, alpha, norm, MHI_of_M
 
-    norm = 2.9558233886481609
+    norm = 27.782393274122413 
     alpha = 0.6
     MHI_of_M = M**alpha * norm
-!    write(*,*) "in func MHI", M, MHI_of_M, alpha, norm
 
   End Function MHI_of_M
+  !======================================================
+
+  !======================================================
+  Function freq_from_redshift(z)
+    !! Output freq in MHz
+
+    Real(DP) :: z, freq_from_redshift, lambda_in_m
+
+    lambda_in_m = 21.d-2 * (1.0 + z)
+    speed_of_light = 299792458.0 ! m/s 
+    freq_from_redshift = speed_of_light / lambda_in_m ! in Hz
+    freq_from_redshift = freq_from_redshift * 1.d-6 
+
+  End Function freq_from_redshift
+  !======================================================
+
+  !======================================================
+  Function redshift_from_freq(freq)
+    !! Input freq in MHz
+
+
+    Real(DP) :: z, redshift_from_freq, freq_in_Hz, lambda_in_m, freq
+
+    freq_in_Hz = freq * 1.d6
+    lambda_in_m = speed_of_light / freq_in_Hz
+    redshift_from_freq = lambda_in_m / 21.d-2 - 1.0
+
+  End Function redshift_from_freq
   !======================================================
 
 

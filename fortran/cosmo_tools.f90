@@ -88,12 +88,10 @@ Contains
 !!    If (iparam .Ne. 4) wb   =  0.022068!0.0258
 !!    If (iparam .Ne. 5) ns   =  0.9624!0.963
 !!    If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
-!!
 
 
 
-    
-!!
+   
 !!    If (iparam .Ne. 1)       w0           = param_vec(1)
 !!    If (iparam .Ne. 2)       wa           = param_vec(2)
 !!    If (iparam .Ne. 3)       wm           = param_vec(3)
