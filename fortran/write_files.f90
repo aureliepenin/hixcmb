@@ -17,6 +17,36 @@ Module write_files
 Contains
 
   !======================================================
+  Subroutine write_cl_for_fisher_versus_cosmo()
+
+    Integer, parameter :: np_fisher = 4
+    Integer, parameter :: nfac      = 3
+    Integer :: ipar, ifac
+    Real(DP), Dimension(1:nfac)      :: fac_vec
+
+
+!! you can check if 10% is fine for the derivative 
+    fac_vec = [0.9, 1., 1.1]
+
+    Do ipar = 1, np_fisher
+       Do ifac = 1, nfac
+          Call set_default_cosmology()
+          if (ipar .eq. 1)  wm   = wm   * fac_vec(ifac)
+          if (ipar .eq. 2)  wb   = wb   * fac_vec(ifac)
+          if (ipar .eq. 3)  ns   = ns   * fac_vec(ifac)
+          if (ipar .eq. 4)  sig8 = sig8 * fac_vec(ifac)
+          Call initiate_conftime()
+          Call initiate_dod0()
+          Call initiate_sigmas()
+          Call write_cl_for_fisher()
+       End Do
+    End Do
+    
+End Subroutine write_cl_for_fisher_versus_cosmo
+  !======================================================
+
+
+  !======================================================
   Subroutine write_cl_for_fisher()
 
     Real(DP) :: dfreq, freq_min, zmin, zmax
@@ -29,25 +59,11 @@ Contains
     Do ibin = 1, nbin
        zmin = redshift_from_freq(freq_min + dfreq * ibin)
        zmax = redshift_from_freq(freq_min + dfreq * (ibin-1))
-       write(*,*) zmin, zmax 
-       Call compute_cl_hi_hi(zmin,zmax)
-       write(*,*) "after hihi"
-       Call compute_cl_cross(zmin, zmax)
-       Call write_cls(zmin,zmax)
-stop
+       write(*,*) "zmin, zmax = ", zmin, zmax 
        Call compute_cl_hi_kappa_for_fisher(zmin,zmax)
-       Call compute_cl_hi_kappa(zmin,zmax)
-       write(*,*) "after hikappa"
-       Call Compute_cl_kappa_kappa(zmin,zmax)
-       write(*,*) "after kappa kappa"
-
-       Deallocate(cl_hi_hi)
-       Deallocate(cl_hi_kappa)
+       Call write_cls_for_cosmo(zmin,zmax)
        Deallocate(cl_hi_kappa_for_fisher)
-       Deallocate(cl_kappa_kappa)
-stop
     End Do
-
 
   End Subroutine write_cl_for_fisher
   !======================================================
@@ -112,25 +128,49 @@ stop
   Subroutine write_cls(zmin,zmax)
 
     Integer   :: il 
-    Real(DP)  :: zmin, zmax
+    Real(DP)  :: zmin, zmax, bOm
     Character(Len=120) :: file_cl
 
-
+    bOm = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
 
     Write(file_cl,"(2A,F4.2,A,F4.2,A)") Trim(dir_out), 'cls_zmin=', zmin, &
          '_zmax=', zmax, '.dat'
     write(*,*) Trim(file_cl)
     Open(unit=10,file=file_cl)
-
+    write(10,*) bOm
     Do il = 1, nl_arr 
-!       write(10,*) l_arr(il), cl_hi_kappa(il), cl_hi_kappa_for_fisher(il), cl_hi_hi(il), cl_kappa_kappa(il) 
-!       write(10,*) l_arr(il), cl_hi_kappa(il), cl_cross_arr(il)
-       write(10,*) l_arr(il), cl_hi_hi(il), cl_hi_arr(il), cl_hi_kappa(il), cl_cross_arr(il)
+       write(10,*) l_arr(il), cl_hi_kappa_for_fisher(il) 
     End Do
     Close(10)
 
   End Subroutine write_cls
   !======================================================
+
+
+  !======================================================
+  Subroutine write_cls_for_cosmo(zmin,zmax)
+
+    Integer   :: il 
+    Real(DP)  :: zmin, zmax, bOm
+    Character(Len=120) :: file_cl
+
+    bOm = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
+
+    Write(file_cl,"(2A,F4.2,A,F4.2,A,F4.2,A,F4.2,A,F4.2,A,F4.2,A)") &
+         Trim(dir_out), 'cls_zmin=', zmin, &
+         '_zmax=', zmax, &
+         '_wm=', wm, '_wb=', wb, '_ns=', ns, '_sig8=', sig8, '.dat'
+    write(*,*) Trim(file_cl)
+    Open(unit=10,file=file_cl)
+    write(10,*) bOm
+    Do il = 1, nl_arr 
+       write(10,*) l_arr(il), cl_hi_kappa_for_fisher(il) 
+    End Do
+    Close(10)
+
+  End Subroutine write_cls_for_cosmo
+  !======================================================
+
 
   !======================================================
   Subroutine write_cl_kappakappa()

@@ -6,7 +6,7 @@ Module Initiate_all
   Use cosmo_tools
   Use power_spec_tools
 
-  Integer, parameter :: nl_arr = 20
+  Integer, parameter :: nl_arr = 100
   Integer, parameter :: nz_arr = 100
 
   Real(DP) :: lmin_arr, lmax_arr, zmin_arr, zmax_arr
@@ -35,8 +35,8 @@ Contains
  !======================================================
  Subroutine initiate_parameters()
    
-   lmin_arr = 2.d0
-   lmax_arr = 3000.d0
+   lmin_arr = 30.d0
+   lmax_arr = 200.d0
 
    zmin_arr = 0.07
    zmax_arr = 5.

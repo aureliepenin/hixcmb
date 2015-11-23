@@ -47,7 +47,7 @@ Contains
 
   !==================================================
   Subroutine set_default_cosmology()
-!!  Subroutine set_default_cosmology(iparam0,param_vec)
+!  Subroutine set_default_cosmology(iparam0,param_vec)
     !==================================================
     !! iparam : 0:reset all cosmology to default except the one selected by iparam
     !!           which has to be defined outside independantly
@@ -56,19 +56,19 @@ Contains
 
 
 !!    Integer                        , Optional :: iparam0
-!!    Real(SP)    , Dimension(1:npar), Optional :: param_vec
+ !!   Real(SP)    , Dimension(1:npar), Optional :: param_vec
 
     Real(DP)  :: sigma_8,rombint,tol_i,tmp
     Integer   :: iparam
 
     External :: rombint
 
-!    If (.Not. Present(iparam0)) Then 
-!       iparam = 0
-!    Else
-!       iparam = iparam0
-!    End If
-    !! Define cosmological parameters
+!!   If (.Not. Present(iparam0)) Then 
+!!      iparam = 0
+!!   Else
+!!       iparam = iparam0
+!!   End If
+!!    !! Define cosmological parameters
     T_cmb = 2.725
     N_nu  = 0.0
     N_eff = 3.04
@@ -81,27 +81,7 @@ Contains
     If (iparam .Ne. 4) wb   =  0.022068!0.0258
     If (iparam .Ne. 5) ns   =  0.9624!0.963
     If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
-
-!!    If (iparam .Ne. 1) w0   = -1.0
-!!    If (iparam .Ne. 2) wa   =  0. 
-!!    If (iparam .Ne. 3) wm   =  0.1430!0.1334
-!!    If (iparam .Ne. 4) wb   =  0.022068!0.0258
-!!    If (iparam .Ne. 5) ns   =  0.9624!0.963
-!!    If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
-
-
-
    
-!!    If (iparam .Ne. 1)       w0           = param_vec(1)
-!!    If (iparam .Ne. 2)       wa           = param_vec(2)
-!!    If (iparam .Ne. 3)       wm           = param_vec(3)
-!!    If (iparam .Ne. 4)       wb           = param_vec(4)
-!!    If (iparam .Ne. 5)       ns           = param_vec(5)
-!!    If (iparam .Ne. 6)       sig8         = param_vec(6)
-!! End If
-!!
-
-
 
     Oml  = 0.6825!0.7259! 0.734             ! Omega_Lambda
     Omk  = 0.                ! Omega_curvature
