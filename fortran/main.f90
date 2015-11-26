@@ -22,7 +22,7 @@ Program Main
   write(*,*) "initiate_arrays"
   Call initiate_arrays()
   write(*,*) "write HI stuffs"
-  Call  write_cl_for_fisher()
+!  Call  write_cl_for_fisher()
   Call write_cl_for_fisher_versus_cosmo()
 stop
 !  Call write_HI_stuffs()
@@ -33,7 +33,7 @@ stop
   pp2 = growth_factor(zz)
   write(*,*) zz, pp2 * sig8
 !Call write_Plin()
-stop
+!stop
 !  write(*,*) 6.2d-4/(bias_main*omega_main)
 !  write(*,*) rho_bar_m(0.d0) * 4.86d-4 / rho_HI(0.d0)
 
@@ -46,14 +46,14 @@ stop
 !  zmax = 1.005
 
   zmin = 1.
-  zmax = 2.
+  zmax = 3.
 
   write(*,*) "before limber one"
-  Call write_over_r_integrand()
+!  Call write_over_r_integrand()
 !stop
- Call compute_cl_hi_hi(zmin,zmax)
+! Call compute_cl_hi_hi(zmin,zmax)
 !  write(*,*) "before new one!"
- Call compute_cl_hi(zmin,zmax)
+! Call compute_cl_hi(zmin,zmax)
 !  write(*,*) "before limber one"
   Call compute_cl_hi_kappa(zmin,zmax)
 !  write(*,*) "before new one!"

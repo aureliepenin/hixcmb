@@ -35,8 +35,8 @@ Contains
  !======================================================
  Subroutine initiate_parameters()
    
-   lmin_arr = 30.d0
-   lmax_arr = 200.d0
+   lmin_arr = 2.d0
+   lmax_arr = 2000.d0
 
    zmin_arr = 0.07
    zmax_arr = 5.

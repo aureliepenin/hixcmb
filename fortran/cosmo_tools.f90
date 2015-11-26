@@ -46,7 +46,7 @@ Module cosmo_tools
 Contains
 
   !==================================================
-  Subroutine set_default_cosmology()
+  Subroutine set_default_cosmology(iparam0)
 !  Subroutine set_default_cosmology(iparam0,param_vec)
     !==================================================
     !! iparam : 0:reset all cosmology to default except the one selected by iparam
@@ -55,7 +55,7 @@ Contains
     !! Normalized at sigma_8
 
 
-!!    Integer                        , Optional :: iparam0
+    Integer                        , Optional :: iparam0
  !!   Real(SP)    , Dimension(1:npar), Optional :: param_vec
 
     Real(DP)  :: sigma_8,rombint,tol_i,tmp
@@ -63,12 +63,13 @@ Contains
 
     External :: rombint
 
-!!   If (.Not. Present(iparam0)) Then 
-!!      iparam = 0
-!!   Else
-!!       iparam = iparam0
-!!   End If
-!!    !! Define cosmological parameters
+   If (.Not. Present(iparam0)) Then 
+     iparam = 0
+  Else
+      iparam = iparam0
+  End If
+
+   !! Define cosmological parameters
     T_cmb = 2.725
     N_nu  = 0.0
     N_eff = 3.04
@@ -81,16 +82,19 @@ Contains
     If (iparam .Ne. 4) wb   =  0.022068!0.0258
     If (iparam .Ne. 5) ns   =  0.9624!0.963
     If (iparam .Ne. 6) sig8 =  0.8344!0.801 !
-   
+
+
+
+    hub = 0.6711
 
     Oml  = 0.6825!0.7259! 0.734             ! Omega_Lambda
     Omk  = 0.                ! Omega_curvature
-    Om0  = 1.- Oml - Omk     ! Omega_matter
-
+!    Om0  = 1.- Oml - Omk     ! Omega_matter
+    Om0 = wm/hub**2
     omega = Om0
     omegal= Oml
 !    hub   =  Sqrt(wm/omega)
-    hub = 0.6711
+
     omegab  = wb/hub**2      ! Omega_baryons
     omeganu = 0.0            ! Omega_neutrinos
     H0  = hub*100.

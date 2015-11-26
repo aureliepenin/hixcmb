@@ -79,6 +79,7 @@ Contains
     Real*8   :: z_arg,k
     Real*8   :: DoD0,Tm
 
+
     Tm      = TF_master(k*hub)
     P_dd_ln = anorm*Tm**2.*(k*hub)**ns*2.*pi**2*hub**3 !(EH99 A1)
     !! Agrees as is with CAMB with the hub**3 factor (OD 12/09/10)...

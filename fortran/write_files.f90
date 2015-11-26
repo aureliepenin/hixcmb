@@ -35,6 +35,7 @@ Contains
           if (ipar .eq. 2)  wb   = wb   * fac_vec(ifac)
           if (ipar .eq. 3)  ns   = ns   * fac_vec(ifac)
           if (ipar .eq. 4)  sig8 = sig8 * fac_vec(ifac)
+          Call set_default_cosmology(ipar + 2)
           Call initiate_conftime()
           Call initiate_dod0()
           Call initiate_sigmas()
@@ -56,12 +57,13 @@ End Subroutine write_cl_for_fisher_versus_cosmo
     dfreq    = 100 ! in MHz
     freq_min = 400
 
-    Do ibin = 1, nbin
+    Do ibin = 1, 1!nbin
        zmin = redshift_from_freq(freq_min + dfreq * ibin)
        zmax = redshift_from_freq(freq_min + dfreq * (ibin-1))
-       write(*,*) "zmin, zmax = ", zmin, zmax 
+!       write(*,*) "zmin, zmax = ", zmin, zmax 
        Call compute_cl_hi_kappa_for_fisher(zmin,zmax)
        Call write_cls_for_cosmo(zmin,zmax)
+!       write(*,*) "cl = ",  cl_hi_kappa_for_fisher(2)
        Deallocate(cl_hi_kappa_for_fisher)
     End Do
 
@@ -133,13 +135,13 @@ End Subroutine write_cl_for_fisher_versus_cosmo
 
     bOm = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
 
-    Write(file_cl,"(2A,F4.2,A,F4.2,A)") Trim(dir_out), 'cls_zmin=', zmin, &
+    Write(file_cl,"(2A,F5.3,A,F5.3,A)") Trim(dir_out), 'cls_hi_zmin=', zmin, &
          '_zmax=', zmax, '.dat'
     write(*,*) Trim(file_cl)
     Open(unit=10,file=file_cl)
     write(10,*) bOm
     Do il = 1, nl_arr 
-       write(10,*) l_arr(il), cl_hi_kappa_for_fisher(il) 
+       write(10,*) l_arr(il), cl_cross_arr(il), cl_hi_kappa(il)
     End Do
     Close(10)
 
@@ -239,8 +241,9 @@ End Subroutine write_cl_for_fisher_versus_cosmo
     eta_for_int   = eta0 - conftime(zmin_for_int)
     kpara_for_int = 0.20 
     ell           = 1000.d0
-    dz = 0.00001 
-    nz = 50
+!    dz = 0.00001 
+    dz = 0.5 
+    nz = 10
     dk = 0.05
     nk = 3
 
@@ -273,7 +276,7 @@ End Subroutine write_cl_for_fisher_versus_cosmo
           bias_term = bias + f * kpara_for_int**2/knorm**2
 
           write(10,*) kpara_for_int, z, func, in_cos, kappa_kernel, bias_term
-          write(*,*) kperp_for_int, ell, knorm
+          write(*,*) ik, iz , ell, eta, frac, kappa_kernel
        End Do
     End Do
     Close(10)

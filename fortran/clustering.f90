@@ -27,28 +27,13 @@ Contains
     Allocate(cl_cross_arr(1:nl_arr))
     Do il = 1, nl_arr
        cl_cross_arr(il) = cl_cross(l_arr(il),zmin,zmax)
-       write(*,*) "new = ", l_arr(il), cl_cross_arr(il)
+!       write(*,*) "new = ", l_arr(il), cl_cross_arr(il)
     End do
 
   End Subroutine Compute_cl_cross
     !======================================================
 
-  !======================================================
-  Subroutine Compute_cl_hi(zmin,zmax)
-    
-    Integer  :: il
-    Real(DP) :: zmin, zmax
-    
-    Allocate(cl_hi_arr(1:nl_arr))
-    Do il = 1, nl_arr
-       cl_hi_arr(il) = cl_hi(l_arr(il),zmin,zmax)
-       write(*,*) "new = ", l_arr(il), cl_hi_arr(il)
-!stop
-    End do
-
-  End Subroutine Compute_cl_hi
-    !======================================================
-
+ 
   !======================================================
   Function cl_cross(ell,zmin,zmax)
     
@@ -99,6 +84,23 @@ Contains
   End Function cl_cross_int
   !======================================================
 
+
+ !======================================================
+  Subroutine Compute_cl_hi(zmin,zmax)
+    
+    Integer  :: il
+    Real(DP) :: zmin, zmax
+    
+    Allocate(cl_hi_arr(1:nl_arr))
+    Do il = 1, nl_arr
+       cl_hi_arr(il) = cl_hi(l_arr(il),zmin,zmax)
+!       write(*,*) "new = ", l_arr(il), cl_hi_arr(il)
+!stop
+    End do
+
+  End Subroutine Compute_cl_hi
+    !======================================================
+
   !======================================================
   Function cl_hi(ell,zmin,zmax)
 !! Appendix A in Shaw+2014 for eta = eta_mean 
@@ -113,7 +115,6 @@ Contains
 
 !    bOmega_HI = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
     eta0     = conftime(0.d0)
-!    eta       = eta0 - conftime(zmean_for_int)
     eta1      = eta0 - conftime(zmin)
     eta2      = eta0 - conftime(zmax)
     eta_mean_for_int = (eta1 + eta2)/2.
@@ -123,13 +124,15 @@ Contains
     zmin_for_int  = zmin 
     zmax_for_int  = zmax 
 !!!CHECK THAT
-!    kpara_min = 2.0 * pi / eta_mean_for_int * (1.d0 + zmean_for_int)
+    kpara_min = 2.0 * pi / eta_mean_for_int * (1.d0 + zmean_for_int)
 !    write(*,*) "kpara min = ", kpara_min 
 !    kpara_max = 0.21 ! cf Bull+2015
+!    write(*,*) "kpara min = ", kpara_min
+
     kpara_max = 0.15*1.d0 ! cf Bull+2015
 !! to check with the limber one
-    kpara_min = 1.d-5
-!    kpara_max = 
+!    kpara_min = 1.d-5
+
     log_kpara_min = log10(kpara_min)
     log_kpara_max = log10(kpara_max)
 
@@ -140,7 +143,7 @@ Contains
 
     cl_hi = cl_hi * Tmin * Tmax / eta1 / eta2 / pi 
 !   write(*,*) "in cl_hi end ", kperp_for_int
-    stop
+
   End Function cl_hi
   !======================================================
 
@@ -161,11 +164,11 @@ Contains
     mu    = kpara / knorm
     f     = growth_factor(zmean_for_int)
 
-    write(*,*) kpara, kperp_for_int, knorm
+!    write(*,*) kpara, kperp_for_int, knorm
     Plin = P_lin_cross(knorm,zmin_for_int,zmax_for_int)
     in_cos = kpara * delta_eta_for_int
-!    cl_hi_int = (bias + f * mu**2)**2 * cos(in_cos) * Plin * log(10.) * kpara
-    cl_hi_int = (bias + f * mu**2)**2  * Plin * log(10.) * kpara
+    cl_hi_int = (bias + f * mu**2)**2 * cos(in_cos) * Plin * log(10.) * kpara
+!    cl_hi_int = (bias + f * mu**2)**2  * Plin * log(10.) * kpara
 
 !! Extra kpara * log 10 because log integration
 

@@ -49,8 +49,6 @@ Contains
     !! Kernel_HI    => (Mpc h^-1)^-2  mK
     !! Cl           => mK
 
-
-
     Real(DP) :: cl_hi_kappa_for_fisher_int, z, Plin, k_buf, detadz, eta, eta0
     Real(DP) :: w_kappa, w_hi
 
@@ -243,7 +241,7 @@ Contains
     Do il = 1, nl_arr 
        l_for_integrand = l_arr(il)
        cl_hi_hi(il) = rombint(cl_hi_hi_int,zmin,zmax,tol_i)
-       write(*,*) "old = ", l_arr(il), cl_hi_hi(il)
+!       write(*,*) "old = ", l_arr(il), cl_hi_hi(il)
     End Do
 
 
