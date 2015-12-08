@@ -11,17 +11,107 @@ Module write_files
 
   Implicit None
 
-
   Public 
   
 Contains
 
+!======================================================
+  Subroutine write_cls_check(zmin,zmax)
+
+    Real(DP) :: zmin, zmax, clhi, clcross
+    Integer  :: il
+    Character(Len=120) :: file
+
+
+    Write(file,"(2A,F5.3,A,F5.3,A,F5.3,A,F5.3,A)") Trim(dir_out), 'cls_cross_zmin=', & 
+         zmin, '_zmax=', zmax,'_lowkpara_wofg.dat'
+    write(*,*) Trim(file)
+    Open(unit=10,file=file)
+    Do il = 1, nl_arr 
+       clhi     = cl_hi_func(l_arr(il),zmin,zmax)
+       clcross  = cl_hi_kap_func(l_arr(il),zmin,zmax)
+       write(10,*) l_arr(il), clhi, clcross
+!       write(*,*)  l_arr(il), clhi, clcross
+    End Do
+    Close(10)
+
+  End Subroutine write_cls_check
   !======================================================
-  Subroutine write_cl_for_fisher_versus_cosmo()
+
+!======================================================
+  Subroutine write_cl_hi_kap_bias_rsd()
+
+    Real(DP) :: zmin, zmax, bias, rsd, total 
+    Integer  :: il
+    Character(Len=120) :: file
+
+    zmin = 3.
+    zmax = 3.005
+    Write(file,"(2A,F5.3,A,F5.3,A,F5.3,A,F5.3,A)") Trim(dir_out), 'cls_cross_bias_rsd_zmin=', & 
+         zmin, '_zmax=', zmax,'.dat'
+    write(*,*) Trim(file)
+    Open(unit=10,file=file)
+    Do il = 1, nl_arr 
+       rsd   = cl_hi_kap_rsd_func(l_arr(il),zmin,zmax)
+       bias  = cl_hi_kap_bias_func(l_arr(il),zmin,zmax)
+       total = cl_hi_kap_func(l_arr(il),zmin,zmax)
+       write(10,*) l_arr(il), rsd, bias, total
+       write(*,*) l_arr(il), rsd, bias, total
+    End Do
+    Close(10)
+
+  End Subroutine write_cl_hi_kap_bias_rsd
+  !======================================================
+
+ !======================================================
+  Subroutine write_cl_hi_kap_for_fisher()
+
+    Real(DP)           :: zmin, zmax, Omega_for_fisher, tmp
+    Integer, parameter :: nfac = 3
+    Integer, parameter :: np_fisher = 2
+    Integer            :: ipar, ifac, il, ibin
+    Real(DP), Dimension(1:nfac)  :: fac_vec
+    Character(Len=120) :: file_cl
+
+
+    fac_vec          = [0.9, 1., 1.1]
+    Do ibin = 1, nbins_freq
+       zmin = redshift_from_freq(freq_min + dfreq * ibin)
+       zmax = redshift_from_freq(freq_min + dfreq * (ibin-1))
+       zmean_for_fisher = (zmin + zmax)/2. 
+       bias_for_fisher  = bias_HI(zmean_for_fisher)
+       Omega_for_fisher = Omega_HI(zmean_for_fisher)
+       !    bias_Omega_for_fisher = bias_for_fisher * Omega_for_fisher
+       f_for_fisher     = growth_factor(zmean_for_fisher)
+
+       Do ipar = 1, np_fisher
+          Do ifac = 1, nfac 
+             if (ipar .eq. 1)  bias_for_fisher = bias_HI(zmean_for_fisher) * fac_vec(ifac)
+             if (ipar .eq. 2)  f_for_fisher    = growth_factor(zmean_for_fisher) * fac_vec(ifac)
+             Write(file_cl,"(2A,F5.3,A,F5.3,A,F5.3,A,F5.3,A)") Trim(dir_out), 'cls_cross_zmin=', zmin, &
+                  '_zmax=', zmax, '_b=', bias_for_fisher, '_f=', f_for_fisher, '.dat'
+             write(*,*) Trim(file_cl)
+             Open(unit=10,file=file_cl)
+             Do il = 1, nl_arr 
+                tmp = cl_hi_kap_fish_func(l_arr(il),zmin,zmax)
+                write(10,*) l_arr(il), tmp
+                write(*,*)  l_arr(il), tmp
+             End Do
+             Close(10)
+          End Do
+       End Do
+    End Do
+
+  End Subroutine write_cl_hi_kap_for_fisher
+  !======================================================
+
+
+  !======================================================
+  Subroutine write_cl_limber_for_fisher_versus_cosmo()
 
     Integer, parameter :: np_fisher = 4
     Integer, parameter :: nfac      = 3
-    Integer :: ipar, ifac
+    Integer            :: ipar, ifac
     Real(DP), Dimension(1:nfac)      :: fac_vec
 
 
@@ -39,25 +129,20 @@ Contains
           Call initiate_conftime()
           Call initiate_dod0()
           Call initiate_sigmas()
-          Call write_cl_for_fisher()
+          Call write_cl_limber_for_fisher()
        End Do
     End Do
     
-End Subroutine write_cl_for_fisher_versus_cosmo
+  End Subroutine write_cl_limber_for_fisher_versus_cosmo
   !======================================================
 
-
   !======================================================
-  Subroutine write_cl_for_fisher()
+  Subroutine write_cl_limber_for_fisher()
 
-    Real(DP) :: dfreq, freq_min, zmin, zmax
-    Integer  :: ibin, nbin
+    Real(DP) :: zmin, zmax
+    Integer  :: ibin
 
-    nbin     = 4
-    dfreq    = 100 ! in MHz
-    freq_min = 400
-
-    Do ibin = 1, 1!nbin
+    Do ibin = 1, 1!nbins_freq
        zmin = redshift_from_freq(freq_min + dfreq * ibin)
        zmax = redshift_from_freq(freq_min + dfreq * (ibin-1))
 !       write(*,*) "zmin, zmax = ", zmin, zmax 
@@ -67,7 +152,7 @@ End Subroutine write_cl_for_fisher_versus_cosmo
        Deallocate(cl_hi_kappa_for_fisher)
     End Do
 
-  End Subroutine write_cl_for_fisher
+  End Subroutine write_cl_limber_for_fisher
   !======================================================
 
   !======================================================
@@ -106,7 +191,6 @@ End Subroutine write_cl_for_fisher_versus_cosmo
   !======================================================
 
 
-
   !======================================================
   Subroutine write_HI_stuffs()
 
@@ -141,13 +225,45 @@ End Subroutine write_cl_for_fisher_versus_cosmo
     Open(unit=10,file=file_cl)
     write(10,*) bOm
     Do il = 1, nl_arr 
-       write(10,*) l_arr(il), cl_cross_arr(il), cl_hi_kappa(il)
+       write(10,*) l_arr(il), cl_cross_arr(il), cl_hi_arr(il)
+!       write(*,*) l_arr(il), cl_cross_arr(il), cl_hi_arr(il)
     End Do
     Close(10)
 
   End Subroutine write_cls
   !======================================================
 
+  !======================================================
+  Subroutine write_all_cls()
+
+    Integer   :: il, ibin
+    Real(DP)  :: zmin, zmax, bOm
+    Character(Len=120) :: file_cl
+
+    bOm = (Bias_HI(zmin)*Omega_HI(zmin) + Bias_HI(zmax)*Omega_HI(zmax))/2.
+
+    Do ibin = 1, 1!nbins_freq
+!       zmin = redshift_from_freq(freq_min + dfreq * ibin)
+!       zmax = redshift_from_freq(freq_min + dfreq * (ibin-1))
+       zmin = 1.0
+       zmax = 1.005
+
+    Write(file_cl,"(2A,F5.3,A,F5.3,A)") Trim(dir_out), 'cls_hi_zmin=', zmin, &
+         '_zmax=', zmax, 'plouf.dat'
+    write(*,*) Trim(file_cl)
+    Open(unit=10,file=file_cl)
+    write(10,*) bOm
+    Do il = 1, nl_arr 
+       write(10,*) l_arr(il), freq_arr(ibin)%cl_hi_arr(il), freq_arr(ibin)%cl_kap_arr(il), &
+             freq_arr(ibin)%cl_hi_kap_arr(il)
+       write(*,*) l_arr(il), freq_arr(ibin)%cl_hi_arr(il), freq_arr(ibin)%cl_kap_arr(il), &
+             freq_arr(ibin)%cl_hi_kap_arr(il)
+    End Do
+    Close(10)
+    End Do
+
+  End Subroutine write_all_cls
+  !======================================================
 
   !======================================================
   Subroutine write_cls_for_cosmo(zmin,zmax)
@@ -286,11 +402,28 @@ End Subroutine write_cl_for_fisher_versus_cosmo
 
 
   !======================================================
-  !Subroutine write_full_integrand()
+  Subroutine write_comoving_distance()
+
+  Character(Len=120) :: file
+  Real(DP)    :: eta0, eta
+  Integer     :: iz
+  
+  eta0     = conftime(0.d0)
+
+
+  Write(file,"(2A)") Trim(dir_out), 'comoving_distance.dat'
+  write(*,*) Trim(file)
+  Open(unit=10,file=file)
+
+  Do iz = 1, nz_arr
+     eta = eta0 - conftime(z_arr(iz))
+     write(10,*) z_arr(iz), eta 
+  End Do
+  Close(10)
 
 
 
-  !End Subroutine write_full_integrand
+  End Subroutine write_comoving_distance
   !======================================================
 
 

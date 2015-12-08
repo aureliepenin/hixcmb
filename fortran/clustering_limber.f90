@@ -229,7 +229,7 @@ Contains
 
 
   !======================================================
-  Subroutine Compute_cl_hi_hi(zmin,zmax)
+  Subroutine Compute_cl_hi_limber(zmin,zmax)
 
     Integer  :: il
     Real(DP) :: zmin, zmax, rombint, tol_i, tmp
@@ -240,21 +240,21 @@ Contains
     tol_i = 1.d-4
     Do il = 1, nl_arr 
        l_for_integrand = l_arr(il)
-       cl_hi_hi(il) = rombint(cl_hi_hi_int,zmin,zmax,tol_i)
+       cl_hi_hi(il) = rombint(cl_hi_limber_int,zmin,zmax,tol_i)
 !       write(*,*) "old = ", l_arr(il), cl_hi_hi(il)
     End Do
 
 
-  End Subroutine Compute_cl_hi_hi
+  End Subroutine Compute_cl_hi_limber
     !======================================================
 
   !======================================================
-  Function cl_hi_hi_int(z)
+  Function cl_hi_limber_int(z)
 !! Kernel_HI => (Mpc h^-1)^-2  mK
 !! detadz    => Mpc h^-1
-!! Cl HIHI   => 
+!! Cl HIHI   => mK^2
 
-    Real(DP)  :: cl_hi_hi_int,  w_HI, geo, Plin, z, a, detadz
+    Real(DP)  :: cl_hi_limber_int,  w_HI, geo, Plin, z, a, detadz
     Real(DP)  :: k_buf, eta, eta0
 
     a      = 1. / (1. + z)
@@ -265,9 +265,9 @@ Contains
     k_buf  = (l_for_integrand + 0.5) / eta 
     Plin   = P_dd_ln(k_buf,z)
 
-    cl_hi_hi_int = detadz * w_HI**2 * Plin 
+    cl_hi_limber_int = detadz * w_HI**2 * Plin 
 
-  End Function Cl_hi_hi_int
+  End Function cl_hi_limber_int
   !======================================================
 
   !======================================================

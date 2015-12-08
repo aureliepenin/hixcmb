@@ -6,16 +6,26 @@ Module Initiate_all
   Use cosmo_tools
   Use power_spec_tools
 
-  Integer, parameter :: nl_arr = 100
+  Integer, parameter :: nl_arr = 25
   Integer, parameter :: nz_arr = 100
+  Integer, parameter :: nbins_freq  = 1
+  Integer :: nbins
 
   Real(DP) :: lmin_arr, lmax_arr, zmin_arr, zmax_arr
+  Real(DP) :: freq_min, freq_max, dfreq
   Real(DP), Dimension(:)  , Allocatable  :: z_arr, l_arr, cl_arr, cl_hi_kappa, cl_hi_hi, cl_kappa_kappa, cl_hi_kappa_for_fisher
-  Real(DP), Dimension(:)  , Allocatable  :: cl_cross_arr, cl_hi_arr
+  Real(DP), Dimension(:)  , Allocatable  :: cl_cross_arr, cl_hi_arr, cl_cross_for_fisher_arr
   Real(DP), Dimension(:,:), Allocatable  :: k_arr, Plin_arr
 
   Character(Len=50) :: dir_out='../Output/'
 
+
+  Type freq
+     Real(DP), Dimension(:), Allocatable :: cl_hi_arr, cl_kap_arr, cl_hi_kap_arr, cl_hi_kap_fish_arr     
+     Real(DP), Dimension(:), Allocatable :: cl_hi_limb_arr, cl_kap_limb_arr, cl_hi_kap_limb_arr      
+  End type freq
+  Type(freq), Dimension(1:nbins_freq)         :: freq_arr
+  
 
   Public 
   
@@ -41,6 +51,11 @@ Contains
    zmin_arr = 0.07
    zmax_arr = 5.
    
+   !! in MHz
+   freq_min = 400.
+   freq_max = 800.
+   dfreq    = 5.!(freq_max + freq_min)/nbins_freq
+
 !! Use Tinker mass function (Cf power_spec_tools.f90)
    mass_function = 4
 
@@ -78,6 +93,7 @@ Contains
     Do il = 1, nl_arr
        tmp = log_lmin + (il - 1)*dlogl
        l_arr(il) = 10**tmp
+!       write(*,*) il, l_arr(il)
     End Do
 
    
